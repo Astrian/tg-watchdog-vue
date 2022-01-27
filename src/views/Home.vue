@@ -10,7 +10,7 @@
         <vue-hcaptcha sitekey="e71af8ea-9ec8-4f48-a898-95fb0686e4f7" @verify="captchaVerify" />
       </div>
       <div v-else-if="loginStatus === 2">
-        <div class="descripction">已完成验证，欢迎入群！<br>正在将您重定向回 Telegram</div>
+        <div class="descripction">已完成验证，欢迎入群！<br>您现在可以正常地关闭这个网页。</div>
       </div>
       <div v-else-if="loginStatus === -2">
         <div class="descripction">服务器返回了一个错误：{{errmsg}}<br>请重新申请加群并完成验证。</div>
