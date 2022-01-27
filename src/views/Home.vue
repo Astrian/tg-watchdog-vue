@@ -7,7 +7,10 @@
       </div>
       <div v-else-if="loginStatus === 1">
         <div class="descripction">请完成以下人机验证，以加入群组。</div>
-        <vue-hcaptcha sitekey="e71af8ea-9ec8-4f48-a898-95fb0686e4f7" @verify="completedVerify" />
+        <vue-hcaptcha sitekey="e71af8ea-9ec8-4f48-a898-95fb0686e4f7" @verify="captchaVerify" />
+      </div>
+      <div v-else-if="loginStatus === 2">
+        <div class="descripction">已完成验证，欢迎入群！<br>正在将您重定向回 Telegram</div>
       </div>
       <div v-else-if="loginStatus === -2">
         <div class="descripction">服务器返回了一个错误：{{errmsg}}<br>请重新申请加群并完成验证。</div>
@@ -31,13 +34,10 @@ export default {
     }
   },
   methods: {
-    completedVerify() {
-      console.log(this.$route)
-    },
-    async login() {
+    async captchaVerify(token, eKey) {
       try {
-        await axios.post('http://localhost:3721/verify-login', this.$route.query)
-        this.loginStatus = 1
+        await axios.post('http://localhost:3721/verify-captcha', { token, eKey, tglogin: this.$route.query })
+        this.loginStatus = 2
       } catch(e) {
         this.loginStatus = -2
         if (e.response) {
@@ -51,7 +51,7 @@ export default {
   mounted() {
     if (this.$route.query.first_name) {
       this.$data.displayName = `${this.$route.query.first_name}${this.$route.query.last_name ? ` ${this.$route.query.last_name}` : ''}`
-      this.login()
+      this.loginStatus = 1
     } else {
       this.loginStatus = -1
     }
