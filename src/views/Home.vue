@@ -38,7 +38,7 @@ export default {
     async captchaVerify(token, eKey) {
       try {
         const {chat_id, ...tglogin} = this.$route.query
-        await axios.post(`${process.env.VUE_APP_API_DOMAIN}/verify-captcha`, { token, eKey, tglogin, chat_id })
+        await axios.post(`https://${process.env.VUE_APP_API_DOMAIN}/verify-captcha`, { token, eKey, tglogin, chat_id })
         this.loginStatus = 2
       } catch(e) {
         this.loginStatus = -2
