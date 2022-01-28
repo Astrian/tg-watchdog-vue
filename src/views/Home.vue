@@ -7,7 +7,7 @@
       </div>
       <div v-else-if="loginStatus === 1">
         <div class="descripction">请完成以下人机验证，以加入群组。</div>
-        <vue-hcaptcha sitekey="e71af8ea-9ec8-4f48-a898-95fb0686e4f7" @verify="captchaVerify" />
+        <vue-hcaptcha :sitekey="sitekey" @verify="captchaVerify" />
       </div>
       <div v-else-if="loginStatus === 2">
         <div class="descripction">已完成验证，欢迎入群！<br>您现在可以正常地关闭这个网页。</div>
@@ -30,7 +30,8 @@ export default {
     return {
       loginStatus: 0,
       displayName: "",
-      errmsg: ""
+      errmsg: "",
+      sitekey: process.env.VUE_APP_SITEKEY
     }
   },
   methods: {
