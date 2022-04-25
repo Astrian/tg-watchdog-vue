@@ -16,7 +16,7 @@
       </div>
       <div v-else-if="loginStatus === 2">
         <div class="header_text">验证已通过</div>
-        <div class="descripction_text">已完成验证，您可以在聊天列表找到您刚才加入的群组。<br>如果无法找到群聊，建议尝试重启 Telegram。</div>
+        <div class="descripction_text">您可以在聊天列表找到您刚才加入的群组。<br>如果无法找到群聊，建议尝试重启应用。</div>
       </div>
       <div v-else-if="loginStatus === 3">
         <div class="descripction_text">请稍等……</div>
@@ -88,6 +88,7 @@ export default {
 <style>
 .home {
   text-align: center;
+  font-family: sans-serif;
 }
 #header_caption_image {
   width: 100px;
