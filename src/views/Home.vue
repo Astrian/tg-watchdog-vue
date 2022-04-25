@@ -1,7 +1,8 @@
 <template>
   <div class="home">
+    <div>{{ back_domain }}</div>
     <div v-if="loginStatus !== -1">
-      <div class="greetings">{{ displayName }}，你好</div>
+      <div class="greetings">{{ `${userProfile.first_name}${userProfile.last_name ? ` ${userProfile.last_name}` : ''}` }}，你好</div>
       <div v-if="loginStatus === 0">
         <div class="descripction">正在验证登录……</div>
       </div>
@@ -23,6 +24,7 @@
         <div class="descripction">服务器返回了一个错误：{{errmsg}}<br>请重新申请加群并完成验证。</div>
       </div>
     </div>
+    <div v-else>Hello!</div>
   </div>
 </template>
 
@@ -35,19 +37,22 @@ export default {
   data() {
     return {
       loginStatus: 0,
-      displayName: "",
       errmsg: "",
-      sitekey: process.env.VUE_APP_SITEKEY
+      sitekey: process.env.VUE_APP_SITEKEY,
+      back_domain: process.env.VUE_APP_API_DOMAIN,
+      tglogin: {},
+      userProfile: {}
     }
   },
   methods: {
     async captchaVerify(form) {
       const token = form.target[0].value
-      if (!token) return
+      if (!window.Telegram.WebApp) return
       this.loginStatus = 3
       try {
-        const {chat_id, ...tglogin} = this.$route.query
-        await axios.post(`https://${process.env.VUE_APP_API_DOMAIN}/verify-captcha`, { token, tglogin, chat_id })
+        const {chat_id} = this.$route.query
+        let tglogin = this.$data.tglogin
+        await axios.post(`https://${process.env.VUE_APP_API_DOMAIN}/verify-captcha`, { token, tglogin, chat_id, user_id: this.$data.userProfile.id })
         this.loginStatus = 2
       } catch(e) {
         this.loginStatus = -2
@@ -60,8 +65,14 @@ export default {
     }
   },
   mounted() {
-    if (this.$route.query.first_name) {
-      this.$data.displayName = `${this.$route.query.first_name}${this.$route.query.last_name ? ` ${this.$route.query.last_name}` : ''}`
+    if (window.Telegram.WebApp.initData) {
+      const initDataRaw = decodeURIComponent(window.Telegram.WebApp.initData).split("&")
+      let initData = {}
+      for (let i in initDataRaw) {
+        initData[initDataRaw[i].split("=")[0]] = initDataRaw[i].split("=")[1]
+      }
+      this.$data.tglogin = initData
+      this.$data.userProfile = JSON.parse(initData.user)
       this.loginStatus = 1
       setTimeout(() => {this.$data.showContinue = true}, 5000)
     } else {
