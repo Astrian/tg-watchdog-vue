@@ -1,39 +1,43 @@
 <template>
   <div class="home">
-    <div>{{ back_domain }}</div>
     <div v-if="loginStatus !== -1">
-      <div class="greetings">{{ `${userProfile.first_name}${userProfile.last_name ? ` ${userProfile.last_name}` : ''}` }}，你好</div>
+      <img src="~@/assets/robot.png" id="header_caption_image" />
+      <!-- div class="greetings">{{ `${userProfile.first_name}${userProfile.last_name ? ` ${userProfile.last_name}` : ''}` }}，你好</div -->
       <div v-if="loginStatus === 0">
         <div class="descripction">正在验证登录……</div>
       </div>
       <div v-else-if="loginStatus === 1">
-        <div class="descripction">请完成以下人机验证，以加入群组。</div>
+        <div class="header_text">人机验证</div>
+        <div class="descripction_text">请完成以下人机验证，以加入群组。</div>
         <!--vue-hcaptcha :sitekey="sitekey" @verify="captchaVerify" /-->
-        <form class="captchaarea" @submit.prevent="captchaVerify">
-          <div class="frc-captcha" :data-sitekey="sitekey"></div>
-          <button type="submit" class="btn">我已完成验证，继续</button>
-        </form>
+        <div class="captcha_area">
+          <vue-friendly-captcha :sitekey="sitekey" @done="captchaVerify" />
+        </div>
       </div>
       <div v-else-if="loginStatus === 2">
-        <div class="descripction">已完成验证，欢迎入群！<br>您现在可以正常地关闭这个网页。</div>
+        <div class="header_text">验证已通过</div>
+        <div class="descripction_text">已完成验证，您可以在聊天列表找到您刚才加入的群组。<br>如果找不到，建议尝试重启 Telegram。</div>
       </div>
       <div v-else-if="loginStatus === 3">
-        <div class="descripction">请稍等……</div>
+        <div class="descripction_text">请稍等……</div>
       </div>
       <div v-else-if="loginStatus === -2">
-        <div class="descripction">服务器返回了一个错误：{{errmsg}}<br>请重新申请加群并完成验证。</div>
+        <div class="header_text">出现错误</div>
+        <div class="descripction_text">服务器返回了一个错误：{{errmsg}}<br>请重新申请加群并完成验证。</div>
       </div>
     </div>
-    <div v-else>Hello!</div>
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
 import axios from 'axios'
-import "friendly-challenge/widget"
+    import VueFriendlyCaptcha from '@somushq/vue-friendly-captcha'
 export default {
   name: 'Home',
+  components: {
+    VueFriendlyCaptcha
+  },
   data() {
     return {
       loginStatus: 0,
@@ -45,15 +49,14 @@ export default {
     }
   },
   methods: {
-    async captchaVerify(form) {
-      const token = form.target[0].value
-      if (!window.Telegram.WebApp) return
+    async captchaVerify(token) {
       this.loginStatus = 3
       try {
         const {chat_id} = this.$route.query
-        let tglogin = this.$data.tglogin
-        await axios.post(`https://${process.env.VUE_APP_API_DOMAIN}/verify-captcha`, { token, tglogin, chat_id, user_id: this.$data.userProfile.id })
+        let tglogin = this.tglogin
+        await axios.post(`https://${process.env.VUE_APP_API_DOMAIN}/verify-captcha`, { token, tglogin, chat_id })
         this.loginStatus = 2
+        window.Telegram.WebApp.MainButton.show().setParams({ text: "结束" }).onClick(() => { window.Telegram.WebApp.close() })
       } catch(e) {
         this.loginStatus = -2
         if (e.response) {
@@ -83,34 +86,25 @@ export default {
 </script>
 
 <style>
-.greetings {
-  font-size: 30px;
-  margin: 30px;
+.home {
+  text-align: center;
 }
-.descripction {
-  margin-bottom: 20px;
+#header_caption_image {
+  width: 100px;
+  height: 100px;
+  padding-top: 40px;
 }
-.captchaarea {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.header_text {
+  color: var(--tg-theme-text-color);
+  font-size: 26px;
+  font-weight: bold;
+  padding-top: 20px;
 }
-button.btn {
-  margin: 10px;
-  font-size: 16px;
-  padding: 5px 20px;
-  background-color: rgb(27, 141, 235);
-  border: 1px solid rgb(5, 83, 148);
-  color: rgb(255, 255, 255);
-  border-radius: 5px;
+.descripction_text {
+  color: var(--tg-theme-hint-color);
+  padding-top: 10px;
 }
-button.btn:hover {
-  background-color: rgb(77, 168, 243);
-  border: 1px solid rgb(13, 109, 187);
-}
-button.btn:disabled {
-  background-color: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(0, 0, 0, 0.3);
+.captcha_area {
+  padding: 25px;
 }
 </style>
