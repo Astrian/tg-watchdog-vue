@@ -26,6 +26,9 @@
         <div class="descripction_text">服务器返回了一个错误：{{errmsg}}<br>请重新申请加群并完成验证。</div>
       </div>
     </div>
+    <div v-else>
+      {{process.env.VUE_APP_API_DOMAIN}}
+    </div>
   </div>
 </template>
 
