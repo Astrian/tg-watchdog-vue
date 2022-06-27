@@ -7,7 +7,7 @@
         <div class="descripction">正在验证登录……</div>
       </div>
       <div v-else-if="loginStatus === 1">
-        <div class="header_text">人机验证</div>
+        <div class="header_text">是真人吗？</div>
         <div class="descripction_text">请完成以下人机验证，以加入群组。</div>
         <!--vue-hcaptcha :sitekey="sitekey" @verify="captchaVerify" /-->
         <div class="captcha_area">
@@ -24,6 +24,10 @@
       <div v-else-if="loginStatus === -2">
         <div class="header_text">出现错误</div>
         <div class="descripction_text">服务器返回了一个错误：{{errmsg}}<br>请重新申请加群并完成验证。</div>
+      </div>
+      <div v-else-if="loginStatus === -3">
+        <div class="header_text">过期啦！</div>
+        <div class="descripction_text">这个验证请求已超过其有效期。<br>请重新申请加群并完成验证。</div>
       </div>
     </div>
     <div v-else>{{back_domain}}</div>
@@ -46,7 +50,8 @@ export default {
       sitekey: process.env.VUE_APP_SITEKEY,
       back_domain: process.env.VUE_APP_API_DOMAIN,
       tglogin: {},
-      userProfile: {}
+      userProfile: {},
+      query: this.$route.query
     }
   },
   methods: {
@@ -78,7 +83,9 @@ export default {
       this.$data.tglogin = initData
       this.$data.userProfile = JSON.parse(initData.user)
       this.loginStatus = 1
-      setTimeout(() => {this.$data.showContinue = true}, 5000)
+      if ((this.query.timestamp + 180000) > new Date().getTime()) {
+        this.loginStatus = -3
+      }
     } else {
       this.loginStatus = -1
     }
